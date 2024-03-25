@@ -5,7 +5,7 @@ namespace SelectionOfSeatsAtCinemaHall;
 
 public class SelectSeatsAlgorithm
 {
-    public void FindBestPlace()
+    public BestSeats? FindBestPlace()
     {
         var data = CinemaHallData.InitialCinemaHallData();
 
@@ -23,7 +23,7 @@ public class SelectSeatsAlgorithm
                 bestInRows.Add(result);
             }
         }
-        var best = bestInRows.OrderBy(o => o.TotalWeight).First();
+        return bestInRows.OrderBy(o => o.TotalWeight).FirstOrDefault();
     }
 
     public void SetRowWeight(Dictionary<int, List<Seat>> data)
