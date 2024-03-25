@@ -11,6 +11,10 @@ wyznaczyć dokładnie jednej kolumny środkowej, są nimi 2 kolumny przyległe d
 Dzięki wyznaczeniu wag dla każdej kolumny i rzędu możemy przypisać finalną wagę dla każdego z siedzeń. Będzie ona suma wagi kolumny i rzędu. Im suma wag jest mniejsza (bliższa zeru), to miejsce jest uznawane za najlepsze. W idealnym przypadku (gdy dane miejsce nie będzie zarezerwowane) to najlepsze miejsce będzie posiadało wagę 0.
 W zależności od układu sali może występować więcej niż jedno takie miejsce.
 
+Oczywiście takie wyznaczenie wag może być generowane podczas dodawania układu sali kinowej do bazy danych lub podczas pierwszego wyliczenia wag, lub po zmianie układu sali, a następnie dodanie do bazy danych. wtedy pomijamy, której wyznaczania wag dla kolumn i rzędów i wyznaczamy tylko najkorzystniejsze miejsca.
+
+Jeżeli chodzi o wyznaczenie środkowej wartości dla kolumn, jest to realizowany poprzez wybranie największej liczby ilości siedzeń w jednym z rzędów. Jest to spowodowane tym, że w układach sali kinowych niektóre rzędy siedzeń nie są zawsze idealnie ułożone w stosunku to osi ekranu. Dlatego zakładamy, że rząd z największą ilością siedzeń jest najbardziej reprezentatywne ułożony w stosunku do osi ekranu i wybrana kolumna będzie jak najbardziej środkowa. Sposobem na obejście tego problemu jest dodanie ręcznie przez użytkownika środkowych rzędów i kolumn dla danego układu sali kinowej.
+
 2. Algorytm
 
 W poniższych punktach przedstawiono sposób działania algorytmu.
@@ -164,5 +168,33 @@ public BestSeats? FindBestPlaceAlongsideInRow(List<Seat> row)
                                                       select new BestSeats() { SeatNumber1 = first.SeatNumber, SeatNumber2 = second.SeatNumber, RowNumber = second.Row, TotalWeight = first.TotalWeight + second.TotalWeight });
 
     return listOfSeatsAlongsideInRowWithTotalWeight.Any() ? listOfSeatsAlongsideInRowWithTotalWeight.OrderBy(o => o.TotalWeight).First() : null;
+}
+```
+
+2.6. Metoda zwracająca najlepszą parę miejsc dla danego układu sali kinowej
+
+Metoda spinającą wszystkie opisane wyżej metody jest FindBestPlace. Po wykonaniu procesów w trzech wyżej wymienionych metodach otrzymujemy listę z najlepszymi parami siedzeń dla każdego wiersza. Lista ta również może być pusta, ponieważ mogą być zarezerwowane wszystkie miejsca w kinie lub nie ma możliwości utworzenie pary siedzeń obok siebie.
+FindBestPlace zwraca dokładnie jedna parę siedzeń, których suma wag jest najniższa lub null, gdy na danym układzie sali kinowej nie ma wolnych par siedzeń.
+
+```c#
+public BestSeats? FindBestPlace()
+{
+    var data = CinemaHallData.InitialCinemaHallData();
+
+    SetRowWeight(data);
+    SetColumnWeight(data);
+
+    var bestInRows = new List<BestSeats>();
+
+    foreach (var row in data)
+    {
+        var result = FindBestPlaceAlongsideInRow(row.Value);
+
+        if (result != null)
+        {
+            bestInRows.Add(result);
+        }
+    }
+    return bestInRows.OrderBy(o => o.TotalWeight).FirstOrDefault();
 }
 ```
