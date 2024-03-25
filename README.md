@@ -8,12 +8,12 @@ wyznaczyć dokładnie jednej kolumny środkowej, są nimi 2 kolumny przyległe d
 
 ![image](https://github.com/SPiersiak/SelectionOfSeatsAtCinemaHall/assets/50294425/40d9e3e4-42ae-47b5-8c00-6c355e43139e)
 
-Dzięki wyznaczeniu wag dla każdej kolumny i rzędu możemy przypisać finalną wagę dla każdego z siedzeń. Będzie ona suma wagi kolumny i rzędu. Im suma wag jest mniejsza (bliższa zeru), to miejsce jest uznawane za najlepsze. W idealnym przypadku (gdy dane miejsce nie będzie zarezerwowane) to najlepsze miejsce będzie posiadało wagę 0.
+Dzięki wyznaczeniu wag dla każdej kolumny i rzędu możemy przypisać finalną wagę dla każdego z siedzeń. Będzie ona sumą wagi kolumny i rzędu. Im suma wag jest mniejsza (bliższa zeru), to miejsce jest uznawane za najlepsze. W idealnym przypadku (gdy dane miejsce nie będzie zarezerwowane) to najlepsze miejsce będzie posiadało wagę 0.
 W zależności od układu sali może występować więcej niż jedno takie miejsce.
 
-Oczywiście takie wyznaczenie wag może być generowane podczas dodawania układu sali kinowej do bazy danych lub podczas pierwszego wyliczenia wag, lub po zmianie układu sali, a następnie dodanie do bazy danych. wtedy pomijamy, której wyznaczania wag dla kolumn i rzędów i wyznaczamy tylko najkorzystniejsze miejsca.
+Oczywiście takie wyznaczenie wag może być generowane podczas dodawania układu sali kinowej do bazy danych lub podczas pierwszego wyliczenia wag, lub po zmianie układu sali, a następnie dodane do bazy danych. Wtedy pomijamy proces wyznaczania wag dla kolumn i rzędów i wyznaczamy tylko najkorzystniejsze miejsca.
 
-Jeżeli chodzi o wyznaczenie środkowej wartości dla kolumn, jest to realizowany poprzez wybranie największej liczby ilości siedzeń w jednym z rzędów. Jest to spowodowane tym, że w układach sali kinowych niektóre rzędy siedzeń nie są zawsze idealnie ułożone w stosunku to osi ekranu. Dlatego zakładamy, że rząd z największą ilością siedzeń jest najbardziej reprezentatywne ułożony w stosunku do osi ekranu i wybrana kolumna będzie jak najbardziej środkowa. Sposobem na obejście tego problemu jest dodanie ręcznie przez użytkownika środkowych rzędów i kolumn dla danego układu sali kinowej.
+Jeżeli chodzi o wyznaczenie środkowej wartości dla kolumn, jest to realizowane poprzez wybranie największej liczby ilości siedzeń w jednym z rzędów. Jest to spowodowane tym, że w układach sali kinowych niektóre rzędy siedzeń nie są zawsze idealnie ułożone w stosunku to osi ekranu. Dlatego zakładamy, że rząd z największą ilością siedzeń jest najbardziej reprezentatywnie ułożony w stosunku do osi ekranu i wybrana kolumna będzie jak najbardziej środkowa. Sposobem na obejście tego problemu jest dodanie ręcznie przez użytkownika środkowych rzędów i kolumn dla danego układu sali kinowej.
 
 2. Algorytm
 
@@ -21,7 +21,7 @@ W poniższych punktach przedstawiono sposób działania algorytmu.
 
 2.1. Model danych
 
-Modelem, który odwzorowuje pojedyncze siedzenie wykorzystywanym przez algorytm, jest klasa Seat przedstawiona poniżej. Przyjmuje takie właściwości jak numer rzędu, numer kolumny, numer siedzenia, wagi (rzędu, kolumny, ogólną wagę siedzenia), informację czy miejsce jest zarezerwowane, typ siedzenia (fotel lub kanapa) wraz ze skorelowanym siedzeniem obok, jeżeli typ to kanapa.
+Modelem, który odwzorowuje pojedyncze siedzenie wykorzystywanym przez algorytm, jest klasa `Seat` przedstawiona poniżej. Przyjmuje takie właściwości jak numer rzędu, numer kolumny, numer siedzenia, wagi (rzędu, kolumny, ogólną wagę siedzenia), informację czy miejsce jest zarezerwowane, typ siedzenia (fotel lub kanapa) wraz ze skorelowanym siedzeniem obok, jeżeli typ to kanapa.
 ```c#
 public class Seat
 {
@@ -47,7 +47,7 @@ public class Seat
 
 2.2. Struktura danych reprezentująca sale kinową
 
-Sala kinowa reprezentowana jest w programie za pomocą słownika, w którym kluczem jest numer rzędu, a wartością jest lista siedzeń w danym rzędzie reprezentowana przez klasę Seat zaprezentowana powyżej.
+Sala kinowa reprezentowana jest w programie za pomocą słownika, w którym kluczem jest numer rzędu, a wartością jest lista siedzeń w danym rzędzie reprezentowana przez klasę `Seat` zaprezentowana powyżej.
 
 ```c#
 Dictionary<int, List<Seat>> CinemaHall
@@ -55,10 +55,13 @@ Dictionary<int, List<Seat>> CinemaHall
 
 2.3. Metoda wyznaczająca wagi rzędów
 
-Metoda SetRowWeight wyznacza wagi rzędów dla całej sali kinowej. Jako argument przyjmuje kompletny słownik przedstawiający całą salę kinową (struktura zaprezentowana w PTK 2.2.).
-Na początku metoda wyznacz ilość rzędów środkowych w zależności czy ich liczba jest parzysta, czy nie. Po wyznaczeniu rzędów środkowych następuje iteracja po każdym rzędzie w celu przypisania dla niego wag.
+Metoda `SetRowWeight` wyznacza wagi rzędów dla całej sali kinowej. Jako argument przyjmuje kompletny słownik przedstawiający całą salę kinową (struktura zaprezentowana w PTK 2.2.).
+Na początku metoda wyznacza ilość rzędów środkowych w zależności czy ich liczba jest parzysta, czy nie. Po wyznaczeniu rzędów środkowych następuje iteracja po każdym rzędzie w celu przypisania dla niego wagi.
 Wartość ta jest wynikiem obliczenia wartości bezwzględnej z różnicy numeru rzędu z numerem rzędu środkowego.
-Jeżeli istnieją dwa rzędy środkowe, to wartość ta wyznaczana jest w ten sam sposób, lecz numer rzędu ośrodkowego jest brany w zależności czy wartość liczonego rzędu jest mniejsza/równa lub większa/równa numerowi rzędu środkowego.
+
+`value = |rowNumber - BestRow|`
+
+Jeżeli istnieją dwa rzędy środkowe, to wartość ta wyznaczana jest w ten sam sposób, lecz numer rzędu środkowego jest brany w zależności czy wartość liczonego rzędu jest mniejsza/równa lub większa/równa numerowi rzędu środkowego.
 
 ```c#
 public void SetRowWeight(Dictionary<int, List<Seat>> data)
@@ -97,10 +100,13 @@ public void SetRowWeight(Dictionary<int, List<Seat>> data)
 
 2.4. Metoda wyznaczająca wagi kolumn
 
-Metoda SetColumnWeight wyznacza wagi dla wszystkich kolumn sali kinowej. Jako argument przyjmuje kompletny słownik przedstawiający całą salę kinową (struktura zaprezentowana w PTK 2.2.).
-Na początku metoda wyznacz ilość kolumn środkowych w zależności czy ich liczba jest parzysta, czy nie. Po wyznaczeniu kolumn środkowych następuje iteracja po każdym rzędzie, a następnie wszystkich kolumnach tego rzędu w celu przypisania dla niego wag.
+Metoda `SetColumnWeight` wyznacza wagi dla wszystkich kolumn sali kinowej. Jako argument przyjmuje kompletny słownik przedstawiający całą salę kinową (struktura zaprezentowana w PTK 2.2.).
+Na początku metoda wyznacza ilość kolumn środkowych w zależności czy ich liczba jest parzysta, czy nie. Po wyznaczeniu kolumn środkowych następuje iteracja po każdym rzędzie, a następnie wszystkich kolumnach tego rzędu w celu przypisania dla niej wagi.
 Wartość ta jest wynikiem obliczenia wartości bezwzględnej z różnicy numeru kolumny z numerem kolumny środkowej.
-Jeżeli istnieją dwie kolumny środkowe, to wartość ta wyznaczana jest w ten sam sposób, lecz numer kolumny środkowego jest brany w zależności czy wartość liczonej kolumny jest mniejsza/równa lub większa/równa numerowi kolumny środkowej.
+
+`value = |columNumber - Bestcolumn|`
+
+Jeżeli istnieją dwie kolumny środkowe, to wartość ta wyznaczana jest w ten sam sposób, lecz numer kolumny środkowej jest brany w zależności czy wartość liczonej kolumny jest mniejsza/równa lub większa/równa numerowi kolumny środkowej.
 
 ```c#
 public void SetColumnWeight(Dictionary<int, List<Seat>> data)
@@ -136,9 +142,9 @@ public void SetColumnWeight(Dictionary<int, List<Seat>> data)
 
 2.5. Metoda wyznaczająca wszystkie dostępne pary siedzeń w danym rzędzie
 
-Metoda FindBestPlaceAlongsideInRow wyznacza wszystkie możliwe pary siedzeń w danym rzędzie i zwraca tę parę, której suma wag jest najmniejsza. Jeżeli nie jest możliwe wyzanczenie jakielkowliek pary siedzeń metoda zwraca null.
-Jako argument metoda przyjmuje listę siedzeń w danym rzędzie. W pierwszej kolejności następuje iteracja po wszystkich siedzenia, które nie są zarezerwowane i są typu fotel. Zostaje zapamiętywany stan poprzedniego iterowanego fotela.
-Jeżeli numer kolumny następnego iterowanego fotela równy jest wartości sumy numeru kolumny poprzedniego siedzenia + 1 to znaczy, że dane fotele występują obok siebie. Taka para zostaje dodana, to listy par foteli gdzie zostają zapisane numery foteli oraz suma ich wag (dzięki tej wartości rozpoznajemy które pary foteli są najlepsze).
+Metoda `FindBestPlaceAlongsideInRow` wyznacza wszystkie możliwe pary siedzeń w danym rzędzie i zwraca tę parę, której suma wag jest najmniejsza. Jeżeli nie jest możliwe wyzanczenie jakielkowliek pary siedzeń metoda zwraca null.
+Jako argument metoda przyjmuje listę siedzeń w danym rzędzie. W pierwszej kolejności następuje iteracja po wszystkich siedzeniach, które nie są zarezerwowane i są typu fotel. Zostaje zapamiętywany stan poprzedniego iterowanego fotela.
+Jeżeli numer kolumny iterowanego fotela równy jest wartości sumy numeru kolumny poprzedniego siedzenia + 1 to znaczy, że dane fotele występują obok siebie. Taka para zostaje dodana, to listy par foteli gdzie zostają zapisane numery foteli oraz suma ich wag (dzięki tej wartości rozpoznajemy które pary foteli są najlepsze).
 W kolejnym etapie zostaje wykonane połączeniu siedzeń, które są kanapami. Możliwe jest zarezerwowanie tylko całej kanapy, a więc dwóch siedzeń. Jeżeli istnieją wolne kanapy, również zostaną dodane do dostępnych par siedzeń.
 
 ```c#
@@ -173,8 +179,8 @@ public BestSeats? FindBestPlaceAlongsideInRow(List<Seat> row)
 
 2.6. Metoda zwracająca najlepszą parę miejsc dla danego układu sali kinowej
 
-Metoda spinającą wszystkie opisane wyżej metody jest FindBestPlace. Po wykonaniu procesów w trzech wyżej wymienionych metodach otrzymujemy listę z najlepszymi parami siedzeń dla każdego wiersza. Lista ta również może być pusta, ponieważ mogą być zarezerwowane wszystkie miejsca w kinie lub nie ma możliwości utworzenie pary siedzeń obok siebie.
-FindBestPlace zwraca dokładnie jedna parę siedzeń, których suma wag jest najniższa lub null, gdy na danym układzie sali kinowej nie ma wolnych par siedzeń.
+Metoda spinającą wszystkie opisane wyżej metody jest `FindBestPlace`. Po wykonaniu procesów w trzech wyżej wymienionych metodach otrzymujemy listę z najlepszymi parami siedzeń dla każdego wiersza. Lista ta również może być pusta, ponieważ mogą być zarezerwowane wszystkie miejsca w kinie lub nie ma możliwości utworzenie pary siedzeń obok siebie.
+`FindBestPlace` zwraca dokładnie jedna parę siedzeń, których suma wag jest najniższa lub null, gdy na danym układzie sali kinowej nie ma wolnych par siedzeń.
 
 ```c#
 public BestSeats? FindBestPlace()
